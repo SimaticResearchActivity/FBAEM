@@ -1,0 +1,22 @@
+#
+# For Cereal
+#
+# Contents inspired by https://github.com/google/googletest/tree/master/googletest#incorporating-into-an-existing-cmake-project
+
+# On Windows, for other CMakeLists_*.txt.in, we do not need the following cmake_minimimum_version. But we do need it
+# for CMakeLists_cereal.txt.in
+cmake_minimum_required(VERSION 3.15)
+
+project(cereal-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(cereal
+  GIT_REPOSITORY    https://github.com/USCiLab/cereal
+  GIT_TAG           v1.3.2
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/cereal-src"
+  BINARY_DIR        ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)
