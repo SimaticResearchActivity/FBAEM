@@ -5,14 +5,18 @@
 #include <vector>
 #include "OptParserExtended.h"
 
-// The following value has been found experimentally when filler field of ClientMessageToBroadcast has size 0
+// The following value has been found experimentally when filler field of SenderMessageToBroadcast has size 0
 constexpr int minSizeClientMessageToBroadcast{22};
 
 // Maximum length of a UDP packet
 constexpr size_t maxLength{65515};
 
-// Constexpr to access elements of tuple sites
-constexpr int HOST{0};
+constexpr int specialRankToRequestExecutionInThreads{99};
+
+using HostTuple = std::tuple<std::string, int>;
+
+// Constexpr to access elements of HostTuple
+constexpr int HOSTNAME{0};
 constexpr int PORT{1};
 
 class Param {
@@ -21,12 +25,17 @@ private:
     int rank{0};
     int sizeMsg{0};
     std::string siteFile{};
-    std::vector<std::tuple<std::string, int>> sites;
+    std::vector<HostTuple> sites;
     bool verbose{false};
 
 public:
     explicit Param(mlib::OptParserExtended const& parser);
-    static std::string csvHeadline();
     [[nodiscard]] std::string asCsv(std::string const& algoStr, std::string const& commLayerStr) const;
+    static std::string csvHeadline();
+    [[nodiscard]] int getNbMsg() const;
+    [[nodiscard]] int getRank() const;
+    [[nodiscard]] std::vector<HostTuple> getSites() const;
+    [[nodiscard]] int getSizeMsg() const;
+    [[nodiscard]] bool getVerbose() const;
 };
 

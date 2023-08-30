@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+
+# Backup files
+*~
+*.bak
+*.BAK
+
+# Directories produced by CLion
+.idea
+cmake-build-debug
+cmake-build-release
+
+# Directories produced by VisualStudio
+.vs
+out
