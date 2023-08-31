@@ -18,6 +18,22 @@ public:
     virtual ~AlgoLayer() = default;
 
     /**
+     * @brief Handles packet (stored in @packetString) received from @peer. Should be called when process is a host,
+     * that is is has called @initHost() on @CommLayer.
+     * @param peer Peer from which packet was received.
+     * @param msgString String containing message.
+     */
+    virtual void callbackHandleMessageAsHost(std::unique_ptr<CommPeer> peer, const std::string &msgString) = 0;
+
+    /**
+     * @brief Handles packet (stored in @packetString) received from @peer. Should be called when process is just a
+     * peer and not a host, that is has /never/ called @initHost() on @CommLayer.
+     * @param peer Peer from which packet was received.
+     * @param msgString String containing message.
+     */
+    virtual void callbackHandleMessageAsNonHostPeer(std::unique_ptr<CommPeer> peer, const std::string &msgString) = 0;
+
+    /**
      * @brief Executes concrete totalOrderBroadcast algorithm. Returns when algorithm is done.
      * @return true if the execution lead to the production of statistics (e.g. case of a broadcaster in Sequencer
      * algorithm) and false otherwise (e.g. case of the sequencer in Sequencer algorithm)
@@ -35,22 +51,6 @@ public:
      * @return @session
      */
     [[nodiscard]] SessionLayer *getSession() const;
-
-    /**
-     * @brief Handles packet (stored in @packetString) received from @peer. Should be called when process is a host,
-     * that is is has called @initHost() on @CommLayer.
-     * @param peer Peer from which packet was received.
-     * @param msgString String containing message.
-     */
-    virtual void handleMessageAsHost(std::unique_ptr<CommPeer> peer, const std::string &msgString) = 0;
-
-    /**
-     * @brief Handles packet (stored in @packetString) received from @peer. Should be called when process is just a
-     * peer and not a host, that is has /never/ called @initHost() on @CommLayer.
-     * @param peer Peer from which packet was received.
-     * @param msgString String containing message.
-     */
-    virtual void handleMessageAsNonHostPeer(std::unique_ptr<CommPeer> peer, const std::string &msgString) = 0;
 
     /**
      * @brief Setter for @broadcasters.

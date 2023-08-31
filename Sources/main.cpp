@@ -10,15 +10,15 @@ using namespace mlib;
 
 unique_ptr<AlgoLayer> concreteAlgoLayer(OptParserExtended const &parser)
 {
-    int algoNumber = parser.getoptIntRequired('a');
-    switch(algoNumber)
+    char algoId = parser.getoptStringRequired('a')[0];
+    switch(algoId)
     {
-        case 0: return make_unique<SequencerAlgoLayer>();
+        case 'S': return make_unique<SequencerAlgoLayer>();
         default:
-            std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoNumber
-                          << " which is not the number of a defined algorithm"
-                          << std::endl
-                          << parser.synopsis () << std::endl;
+            std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoId
+                      << " which is not the identifier of a defined algorithm"
+                      << std::endl
+                      << parser.synopsis () << std::endl;
             exit(EXIT_FAILURE);
     }
 }
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     // Take care of program arguments
     //
     OptParserExtended parser{
-            "a:algo algo_number \t Broadcast Algorithm\n\t\t\t\t\t\t0 = Sequencer based",
+            "a:algo algo_identifier \t Broadcast Algorithm\n\t\t\t\t\t\tS = Sequencer based",
             "c:comm communicationLayer_identifier \t Communication layer to be used\n\t\t\t\t\t\te = Enet (reliable)",
             "h|help \t Show help message",
             "n:nbMsg number \t Number of messages to be sent",

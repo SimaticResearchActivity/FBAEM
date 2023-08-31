@@ -23,7 +23,7 @@ public:
     unsigned int broadcastPerfMeasure(unsigned int msgNum);
 
     /**
-     * @brief Callback to be called by @AlgoLayer when @AlgoLayer is able to callbackDeliver totalOrderBroadcast @msg.
+     * @brief Callback called by @AlgoLayer when @AlgoLayer is able to deliver totalOrderBroadcast @msg.
      * @param senderRank Rank of @msg sender.
      * @param seqNum Sequence number of @msg.
      * @param msg Message to be delivered.
@@ -31,7 +31,7 @@ public:
     void callbackDeliver(int senderRank, int seqNum, const std::string &msg);
 
     /**
-     * @brief Callback to be called by @AlgoLayer when @AlgoLayer is initialized.
+     * @brief Callback called by @AlgoLayer when @AlgoLayer is initialized locally.
      */
     void callbackInitDone() const;
 

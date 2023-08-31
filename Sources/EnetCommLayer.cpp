@@ -42,11 +42,11 @@ bool EnetCommLayer::analyzeEvent(ENetEvent const& event, bool nonHostPeer)
             return true;
         case ENET_EVENT_TYPE_RECEIVE:
             if (nonHostPeer)
-                getAlgoLayer()->handleMessageAsNonHostPeer(
+                getAlgoLayer()->callbackHandleMessageAsNonHostPeer(
                         make_unique<EnetCommPeer>(event.peer),
                         string{bit_cast<char *>(event.packet->data), event.packet->dataLength});
             else
-                getAlgoLayer()->handleMessageAsHost(
+                getAlgoLayer()->callbackHandleMessageAsHost(
                         make_unique<EnetCommPeer>(event.peer),
                         string{bit_cast<char *>(event.packet->data), event.packet->dataLength});
             /* Clean up the packet now that we're done using it. */

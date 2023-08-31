@@ -43,10 +43,10 @@ Note `Resources` directory of *FBAE* repository contains samples of site files.
 Once your site file is ready, you can run `fbae` executable according to the following usage:
 
 ```txt
-fbae -a|--algo <algo_number> -c|--comm <communicationLayer_identifier> -h|--help -n|--nbMsg <number> -r|--rank <rank_number> -s|--size <size_in_bytes> -S|--site <siteFile_name> -v|--verbose
+fbae -a|--algo <algo_identifier> -c|--comm <communicationLayer_identifier> -h|--help -n|--nbMsg <number> -r|--rank <rank_number> -s|--size <size_in_bytes> -S|--site <siteFile_name> -v|--verbose
 Where:
-  -a|--algo <algo_number>                    Broadcast Algorithm
-                                                0 = Sequencer based
+  -a|--algo <algo_identifier>                Broadcast Algorithm
+                                                S = Sequencer based
   -c|--comm <communicationLayer_identifier>  Communication layer to be used
                                                 e = Enet (reliable)
   -h|--help                                  Show help message
@@ -57,20 +57,20 @@ Where:
   -v|--verbose                               [optional] Verbose display required
 ```
 
-For instance, you can open 3 terminals anr run:
+For instance, you can open 3 terminals and run:
 
-- `./fbae -a 0 -c e -n 20 -r 2 -s 32 -S ../../Resources/sites_3_local.json` on terminal 2 (In this example, we first launch `fbae` executable with rank 2, because we want to invoke Sequencer total-order broadcast algorithm. And the role of the sequencer process is given to the last site specified in json file).
-- `./fbae -a 0 -c e -n 20 -r 1 -s 32 -S ../../Resources/sites_3_local.json` on terminal 1
-- `./fbae -a 0 -c e -n 20 -r 0 -s 32 -S ../../Resources/sites_3_local.json` on terminal 0
+- `./fbae -a S -c e -n 20 -r 2 -s 32 -S ../../Resources/sites_3_local.json` on terminal 2 (In this example, we first launch `fbae` executable with rank 2, because we want to invoke Sequencer total-order broadcast algorithm. And the role of the sequencer process is given to the last site specified in json file).
+- `./fbae -a S -c e -n 20 -r 1 -s 32 -S ../../Resources/sites_3_local.json` on terminal 1
+- `./fbae -a S -c e -n 20 -r 0 -s 32 -S ../../Resources/sites_3_local.json` on terminal 0
 
-After a while (depending on the number of messages to be sent you specified), `fbae` displays the statistics observed for this process, e.g.:
+After a while (depending on the number of messages to be sent you specified), `fbae` displays the statistics (structured in CSV format) observed for this process, e.g.:
 
 ```txt
 algo,commLayer,nbMsg,rank,sizeMsg,siteFile,nbReceivedMsg,nbSentMsg,ratio nbRcv/nbSent,Average (in ms),Min,Q(0,25),Q(0,5),Q(0,75),Q(0,99),Q(0,999),Q(0,9999),Max
 SequencerENet,100,99,32,../../Resources/sites_3_local.json,100,200,0.500000,0.241571,0.130782,0.239602,0.244068,0.248755,0.417237,0.417237,0.417237,0.417237
 ```
 
-Note that, for testing purpose, it is possible to launch a single instance of `fbae` which will execute all activities in different threads. To do so, give value `99` to the rank, e.g. `./fbae -a 0 -c e -n 20 -r 99 -s 32 -S ../../Resources/sites_3_local.json`
+Note that, for testing purpose, it is possible to launch a single instance of `fbae` which will execute all activities in different threads. To do so, give value `99` to the rank, e.g. `./fbae -a S -c e -n 20 -r 99 -s 32 -S ../../Resources/sites_3_local.json`
 
 ## Current status of *FBAE*
 
@@ -90,23 +90,79 @@ When a Broadcaster wants to broadcast a message, it sends its message to the Seq
 
 ## Extending *FABE*
 
+### Global architecture of *FBAE*
+
+*FBAE* is structured into 3 layers :
+
+- *Session layer* (made of `SessionLayer` class) is the layer responsible for performance evaluation. It requests Total-order broadcasts from the *Algorithm layer*.
+- *Algorithm layer* (made of `AlgoLayer` factory class and its subclasses) is the layer responsible for putting in place Total-order guarantees, once messages have been exchanged between processes by the *Communication layer*.
+- *Communication layer* (made of `CommLayer` factory class and its subclasses, and also of `CommPeer` factory class and its subclasses) is the layer responsible for exchanging messages between processes.
+
+The interfaces between these layers are the following:
+
+- *Session layer* / *Algorithm layer*
+
+    - *Session layer* ==> *Algorithm layer*
+
+         - *Session layer* calls `AlgoLayer`'s `executeAndProducedStatistics()` method to launch *Algorithm layer*. Note that we stay in `executeAndProducedStatistics()` method until *Algorithm layer* is done executing.
+         - Then it calls `totalOrderBroadcast()` method for each total-order broadcast it has to make. 
+         - Finally it calls `terminate()` method to tell the *Algorithm layer* than it can shutdwon.
+
+     - *Algorithm layer* ==> *Session layer*
+         - Once *Algorithm layer* considers it is fully initialized locally, it calls `callbackInitDone()` method in *Session layer*.
+         - Each time a message can be delivered, it calls `callbackDeliver()` method.
+
+- *Algorithm layer* / *Communication layer*
+
+    - *Algorithm layer* ==> *Communication layer*
+
+         - *Algorithm layer* calls `CommLayer`'s `initHost()` method when it wants to be able to accept connections from other processes.
+         - And/or it calls `CommLayer`'s `connectToHost()` method when it wants to establish a connection with another process.
+         - Then it call `CommLayer`'s `waitForMsg()` method. Note that we stay in `waitForMsg()` method until *Communication layer* detect a pre-specified number of disconnections (see parameter `maxDisconnections` of `waitForMsg()` method).
+         - When *Algorithm layer* needs to send a message to another process, it can use:
+
+             - `CommPeer`'s `send()` lethod to send a message to a single process.
+             - `CommLayer`'s `broadcastMsg()` method to broadcast a message to all processes connected to this process.
+
+         - *Algorithm layer* calls `CommPeer`'s `disconnect()` method when it wants to disconnect from a peer process.
+
+    - *Communication layer* ==> *Algorithm layer*
+
+         - When *Communication layer* receives a message, it calls either `callbackHandleMessageAsHost()` or `callbackHandleMessageAsNonHostPeer()` method in *Algorithm layer*.
+
 ### Adding another Total-Order broadcast algorithm
 
-If you want to add another Total-Order broadcast algorithm, inspire yourself from:
+If you want to add another Total-Order broadcast algorithm:
 
-- `SequencerAlgoLayer.h` to declare the class implementing your algorithm,
-- `SequencerAlgoLayer.cpp` to define this class,
-- `SequencerAlgoLayerMsg.h` to define the identifier and the structure of each message used by your algorithm.
+1. Make a new subclass of `AlgoLayer` by inspiring yourself from:
+
+    - `SequencerAlgoLayer.h` to declare the class implementing your algorithm,
+    - `SequencerAlgoLayer.cpp` to define this class,
+    - `SequencerAlgoLayerMsg.h` to define the identifier and the structure of each message used by your algorithm.
+
+2. Modify `main.cpp` to integrate your new class:
+
+    - In `main` function, modify `parser` variable intialization in order to specify (in the same way as letter `'S'` in string `"\n\t\t\t\t\t\tS = Sequencer based"` specifies `'S'` as the letter for *Sequencer algorithm*) the letter which will specify your added algorithm.
+    - In `concreteAlgoLayer()` function, add a `case` with this new letter to create an instance of your class.
 
 ### Adding another communication protocol
 
-If you want to add another Total-Order broadcast algorithm, inspire yourself from:
+If you want to add another communication protocol:
 
-- `EnetCommLayer.h` to declare the class implementing your usage of the protocol,
-- `EnetCommLayer.h` to define this class,
-- `EnetCommPeer.h` to declare the classe representing a peer in your usage of the protocol,
-- `EnetCommPeer.cpp` to define this class.
+1. Make a new subclass of `CommLayer` by inspiring yourself from:
 
+    - `EnetCommLayer.h` to declare the class implementing your usage of the protocol,
+    - `EnetCommLayer.h` to define this class,
+
+2. Make a new subclass of `CommPeer` by inspiring yourself from:
+    - `EnetCommPeer.h` to declare the classe representing a peer in your usage of the protocol,
+    - `EnetCommPeer.cpp` to define this class.
+
+3. Modify `main.cpp` to integrate your new class:
+
+    - In `main` function, modify `parser` variable intialization in order to specify (in the same way as letter `'e'` in string `"\n\t\t\t\t\ŧ\t\te = Enet (reliable)"` specifies `'e'` as the letter for *Enet (reliable)*) the letter which will specify your added communication protocol.
+    - In `concreteCommLayer()` function, add a `case` with this new letter to create an instance of your `CommLayer` subclass.
+    - Note: There is nothing to do in `main.cpp` concerning new `CommPeer` subclass, as creation of instances of this subclass will be done inside your `CommLayer` subclass.
 
 
 

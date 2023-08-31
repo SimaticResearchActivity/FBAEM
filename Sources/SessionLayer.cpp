@@ -12,7 +12,7 @@ SessionLayer::SessionLayer(const Param &param, int rank, std::unique_ptr<AlgoLay
 , rank{rank}
 , algoLayer{std::move(algoLayer)}
 , commLayer{std::move(commLayer)}
-, measures{param.getNbMsg() * param.getSites().size()}
+, measures{static_cast<size_t>(param.getNbMsg())}
 {
     this->algoLayer->setSession(this);
 }
@@ -137,12 +137,15 @@ unsigned int SessionLayer::processFirstBroadcastMsg(int senderRank, int seqNum, 
 void SessionLayer::processPerfMeasureMsg(int senderRank, int seqNum, const std::string &msg) {
     if (param.getVerbose())
         cout << "SessionLayer #" << rank << " : Deliver PerfMeasure from sender #" << senderRank << " (seqNum = " << seqNum << ")\n";
-    if (seqNum % algoLayer->getBroadcasters().size() == rank)
+    auto spm{deserializeStruct<SessionPerfMeasure>(msg)};
+    // We check which process must send the PerfResponse. The formula hereafter guarantees that first PerfMeasure is
+    // answered by successor of sender process, second PerfMeasure message is answered by successor of successor of
+    // sender process, etc.
+    if ((senderRank + spm.msgNum) % algoLayer->getBroadcasters().size() == rank)
     {
         // Current process must broadcast PerfResponse message for this PerfMeasure message.
         if (param.getVerbose())
             cout << "SessionLayer #" << rank << " : Broadcast PerfResponse by sender #" << rank << "\n";
-        auto spm{deserializeStruct<SessionPerfMeasure>(msg)};
         auto s {serializeStruct<SessionPerfResponse>(SessionPerfResponse{SessionMsgId::PerfResponse,
                                                                          spm.senderRank,
                                                                          spm.msgNum,

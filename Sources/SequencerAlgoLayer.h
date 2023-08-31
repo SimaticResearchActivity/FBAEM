@@ -9,9 +9,9 @@ private:
      */
     std::unique_ptr<CommPeer> sequencerPeer;
 public:
+    void callbackHandleMessageAsHost(std::unique_ptr<CommPeer> peer, const std::string &msgString) override;
+    void callbackHandleMessageAsNonHostPeer(std::unique_ptr<CommPeer> peer, const std::string &msgString) override;
     bool executeAndProducedStatistics() override;
-    void handleMessageAsHost(std::unique_ptr<CommPeer> peer, const std::string &msgString) override;
-    void handleMessageAsNonHostPeer(std::unique_ptr<CommPeer> peer, const std::string &msgString) override;
     void totalOrderBroadcast(const std::string &msg) override;
     void terminate() override;
     std::string toString() override;

@@ -33,10 +33,11 @@ public:
     [[nodiscard]] AlgoLayer* getAlgoLayer() const;
 
     /**
-     * @brief Initializes waiting for @nbAwaitedConnections connections on port @port. Any message received leads
-     * to a call to method @handlePacketFromPeer of @algoLayer. Returns when all connections have been broken.
+     * @brief Initializes accepting @nbAwaitedConnections connections on port @port. If such acceptance is blocking for
+     * the considered communication protocol, blocks until @nbAwaitedConnections connections have been established.
      * @param port Socket port on which to wait for connections .
-     * @param nbAwaitedConnections Number of disconnections to wait before returning.
+     * @param nbAwaitedConnections Number of disconnections to wait before returning (case of communication protocol
+     * which is blocking on accepting connections).
      * @param aAlgoLayer @AlgoLayer using this @CommLayer.
      */
     virtual void initHost(int port, size_t nbAwaitedConnections, AlgoLayer *aAlgoLayer) = 0;
