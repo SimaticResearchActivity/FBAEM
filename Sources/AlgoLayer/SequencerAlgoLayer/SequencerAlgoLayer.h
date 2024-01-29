@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AlgoLayer.h"
+#include "../AlgoLayer.h"
 
 class SequencerAlgoLayer : public AlgoLayer {
 private:
@@ -23,7 +23,6 @@ private:
 
 public:
     bool callbackHandleMessage(std::unique_ptr<CommPeer> peer, const std::string &msgString) override;
-
     bool executeAndProducedStatistics() override;
     void totalOrderBroadcast(const std::string &msg) override;
     void terminate() override;

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory>
-#include "AlgoLayer.h"
-#include "Measures.h"
-#include "Param.h"
+#include "../AlgoLayer/AlgoLayer.h"
+#include "../Measures.h"
+#include "../Param.h"
 
 class SessionLayer {
 private:
@@ -12,12 +12,15 @@ private:
     std::unique_ptr<AlgoLayer> algoLayer;
     std::unique_ptr<CommLayer> commLayer;
     Measures measures;
+    unsigned int numPerfMeasure{0};
+    size_t nbReceivedFirstBroadcast{0};
+    size_t nbReceivedFinishedPerfMeasures{0};
 public:
     SessionLayer(const Param &param, int rank, std::unique_ptr<AlgoLayer> algoLayer, std::unique_ptr<CommLayer> commLayer);
 
     /**
      * @brief Broadcasts a @PerfMeasure message with @msgNum incremented by 1.
-     * @param msgNum Value of msgNum to increment before storing in @PerfMeasure message
+     * @param msgNum Value of numPerfMeasure to increment before storing in @PerfMeasure message
      * @return Incremented value of @msgNum
      */
     unsigned int broadcastPerfMeasure(unsigned int msgNum);

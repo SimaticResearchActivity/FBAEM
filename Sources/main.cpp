@@ -1,10 +1,11 @@
 #include <iostream>
 #include <thread>
-#include "EnetCommLayer.h"
+#include "CommLayer/EnetCommLayer/EnetCommLayer.h"
 #include "OptParserExtended.h"
-#include "SequencerAlgoLayer.h"
-#include "SessionLayer.h"
-#include "TcpCommLayer.h"
+#include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
+#include "SessionLayer/SessionLayer.h"
+#include "CommLayer/TcpCommLayer/TcpCommLayer.h"
+#include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
 
 using namespace std;
 using namespace mlib;
@@ -15,6 +16,7 @@ unique_ptr<AlgoLayer> concreteAlgoLayer(OptParserExtended const &parser)
     switch(algoId)
     {
         case 'S': return make_unique<SequencerAlgoLayer>();
+        case 'B' : return make_unique<BBOBBAlgoLayer>();
         default:
             std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoId
                       << " which is not the identifier of a defined algorithm"
@@ -100,7 +102,8 @@ int main(int argc, char* argv[])
     {
         size_t nbSites{param.getSites().size()};
         vector<unique_ptr<SessionLayer>> sessions;
-        vector<jthread> sessionThreads;
+        // thread instead of jthread to be compatible with Clang on MacOS
+        vector<thread> sessionThreads;
         for (int rank = 0 ; rank < nbSites ; ++rank)
         {
             sessions.emplace_back(make_unique<SessionLayer>(param, rank, concreteAlgoLayer(parser), concreteCommLayer(parser)));
