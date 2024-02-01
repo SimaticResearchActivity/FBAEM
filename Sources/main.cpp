@@ -107,5 +107,7 @@ int main(int argc, char* argv[])
     SessionLayer session{param, static_cast<rank_t>(rank), concreteAlgoLayer(parser)};
     session.execute();
 
+    MPI_Finalize();
+
     return EXIT_SUCCESS;
 }
