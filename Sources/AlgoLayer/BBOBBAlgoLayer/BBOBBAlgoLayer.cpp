@@ -39,8 +39,7 @@ void BBOBBAlgoLayer::beginWave() {
              << "\n";
     auto s{serializeStruct(lastSentStepMsg)};
 
-    int msgSize{sizeof(s) / sizeof(char)};
-    MPI_Send(s.data(), msgSize, MPI_INT, peersRank[lastSentStepMsg.step], 0, MPI_COMM_WORLD);
+    MPI_Send(s.data(), s.size(), MPI_BYTE, peersRank[lastSentStepMsg.step], 0, MPI_COMM_WORLD);
 
 }
 
@@ -59,8 +58,7 @@ void BBOBBAlgoLayer::CatchUpIfLateInMessageSending() {
                  << " : Send Step Message (step : " << lastSentStepMsg.step << " / wave : " << lastSentStepMsg.wave
                  << ") to Broadcaster#" << static_cast<uint32_t>(peersRank[lastSentStepMsg.step]) << "\n";
         auto s{serializeStruct(lastSentStepMsg)};
-        int msgSize{sizeof(s) / sizeof(char)};
-        MPI_Send(s.data(), msgSize, MPI_INT, peersRank[lastSentStepMsg.step], 0, MPI_COMM_WORLD);
+        MPI_Send(s.data(), s.size(), MPI_BYTE, peersRank[lastSentStepMsg.step], 0, MPI_COMM_WORLD);
 
         step = lastSentStepMsg.step;
     }
