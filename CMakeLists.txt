@@ -14,6 +14,7 @@ set (BUILD_SHARED_LIBS FALSE)
 
 set(CMAKE_CXX_STANDARD 20)
 
+find_package(MPI REQUIRED)
 #
 # We include the subset of Boost we will be using.
 #

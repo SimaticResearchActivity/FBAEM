@@ -51,13 +51,6 @@ Param::Param(mlib::OptParserExtended const& parser)
     cereal::JSONInputArchive iarchive(ifs); // Create an input archive
     iarchive(sites);
 
-    if (verbose)
-    {
-        std::cout << "Contents of " << siteFile << "\n";
-        for (auto const& [host, port]: sites) {
-            std::cout << "\tSite " << host << ":" << port << "\n";
-        }
-    }
 
     // Check that rank value is consistent with contents of site file
     if ((rank != specialRankToRequestExecutionInTasks) && (rank > sites.size() - 1))

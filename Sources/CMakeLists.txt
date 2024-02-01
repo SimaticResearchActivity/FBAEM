@@ -32,6 +32,7 @@ add_executable(fbae
         get_cpu_time.cpp
         get_cpu_time.h)
 target_link_libraries(fbae PUBLIC enet)
+target_link_libraries(fbae  PRIVATE MPI::MPI_CXX)
 if (WIN32)
   target_link_libraries(fbae PUBLIC ws2_32.lib winmm.lib)
 else() # We are under UNIX

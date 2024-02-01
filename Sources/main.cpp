@@ -6,6 +6,7 @@
 #include "SessionLayer/SessionLayer.h"
 #include "CommLayer/TcpCommLayer/TcpCommLayer.h"
 #include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
+#include <mpi.h>
 
 using namespace std;
 using namespace mlib;
@@ -95,6 +96,8 @@ int main(int argc, char* argv[])
     //
     // Launch the application
     //
+
+    /*
     if (param.getRank() != specialRankToRequestExecutionInTasks)
     {
         SessionLayer session{param, param.getRank(), concreteAlgoLayer(parser), concreteCommLayer(parser)};
@@ -113,5 +116,17 @@ int main(int argc, char* argv[])
         for (auto& t: sessionTasks)
             t.get();
     }
+     */
+
+    int provided;
+    MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided);
+
+    int size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    SessionLayer session{param, static_cast<rank_t>(rank), concreteAlgoLayer(parser), concreteCommLayer(parser)};
+    session.execute();
+
     return EXIT_SUCCESS;
 }

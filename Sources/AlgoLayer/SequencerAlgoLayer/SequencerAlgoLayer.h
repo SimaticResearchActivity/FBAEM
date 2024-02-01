@@ -13,6 +13,9 @@ private:
      * @brief @CommPeer used to send messages to sequencer.
      */
     std::unique_ptr<CommPeer> sequencerPeer;
+    int rank;
+    int size;
+    bool receive = true;
 
 public:
     bool callbackHandleMessage(std::unique_ptr<CommPeer> peer, std::string && msgString) override;
