@@ -11,33 +11,15 @@ namespace fbae_SequencerAlgoLayer
     //---------------------------------------------------
     enum class MsgId : MsgId_t
     {
-        // Messages sent by the sequencer to broadcaster(s)
-        AckDisconnectIntent = 65, // We start with a value which be displayed as a character in debugger
-        AllBroadcastersConnected,
+        // Message sent by the sequencer to broadcaster(s)
         BroadcastMessage,
-        // Messages sent by a broadcaster to the sequencer
-        DisconnectIntent,
+        // Message sent by a broadcaster to the sequencer
         MessageToBroadcast,
-        RankInfo,
     };
 
     //---------------------------------------------------
-    // Structure of messages sent by a broadcaster to the sequencer
+    // Structure of message sent by a broadcaster to the sequencer
     //---------------------------------------------------
-    struct StructGenericMsgWithoutData
-    {
-        MsgId msgId{};
-
-        // This method lets cereal know which data members to serialize
-        template<class Archive>
-        void serialize(Archive& archive)
-        {
-            archive(msgId); // serialize things by passing them to the archive
-        }
-    };
-
-    using StructAckDisconnectIntent = StructGenericMsgWithoutData;
-    using StructAllBroadcastersConnected = StructGenericMsgWithoutData;
 
     struct StructBroadcastMessage
     {
@@ -54,23 +36,8 @@ namespace fbae_SequencerAlgoLayer
     };
 
     //---------------------------------------------------
-    // Structure of messages sent by a broadcaster to the sequencer
+    // Structure of message sent by a broadcaster to the sequencer
     //---------------------------------------------------
-    struct StructGenericMsgWithRank
-    {
-        MsgId msgId{};
-        rank_t senderRank{};
-
-        // This method lets cereal know which data members to serialize
-        template<class Archive>
-        void serialize(Archive& archive)
-        {
-            archive(msgId, senderRank); // serialize things by passing them to the archive
-        }
-    };
-
-    using StructDisconnectIntent = StructGenericMsgWithRank;
-    using StructRankInfo = StructGenericMsgWithRank;
 
     struct StructMessageToBroadcast
     {

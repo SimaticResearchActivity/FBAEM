@@ -22,9 +22,7 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
 
 
     // In Sequencer algorithm, the last site is not broadcasting. We build @broadcasters vector accordingly.
-    std::vector<HostTuple> broadcasters = getSession()->getParam().getSites();
-    broadcasters.pop_back();
-    setBroadcasters(broadcasters);
+    setBroadcasters(size - 1);
 
     // Process is sequencer
     if (rank == 0) {
@@ -33,7 +31,6 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
             cout << "\tSequencerAlgoLayer / Sequencer : Wait for messages\n";
 
         while (receive) {
-
 
             MPI_Status status;
             MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
@@ -53,8 +50,7 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
                                                                                   bmtb.senderRank,
                                                                                   bmtb.sessionMsg})};
 
-
-            int msgSize = s.size() * sizeof(char);
+            int msgSize = s.size();
             MPI_Bcast(&msgSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
             MPI_Bcast(s.data(), msgSize, MPI_BYTE, 0, MPI_COMM_WORLD);
 
@@ -85,10 +81,10 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
             task_to_receive_msg.get();
 
             auto sbm {deserializeStruct<StructBroadcastMessage>(std::move(std::string(buffer.begin(), buffer.end())))};
-            getSession()->callbackDeliver(sbm.senderRank - 1,std::move(sbm.sessionMsg));
+            getSession()->callbackDeliver(sbm.senderRank,std::move(sbm.sessionMsg));
 
         }
-        cout << "\tSequencerAlgoLayer / Broadcaster #" << getSession()->getRank()
+        cout << "\tSequencerAlgoLayer / Broadcaster #" << rank
              << " : Finished waiting for messages ==> Giving back control to SessionLayer\n";
 
         return true;
@@ -96,7 +92,6 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
 }
 
 void SequencerAlgoLayer::terminate() {
-    //Finished
     receive = false;
 }
 
@@ -104,9 +99,6 @@ std::string SequencerAlgoLayer::toString() {
     return "Sequencer";
 }
 
-bool SequencerAlgoLayer::callbackHandleMessage(std::unique_ptr<CommPeer> peer, string &&msgString) {
-    return false;
-}
 
 void SequencerAlgoLayer::totalOrderBroadcast(string &&msg) {
     // Send MessageToBroadcast to sequencer
@@ -114,11 +106,7 @@ void SequencerAlgoLayer::totalOrderBroadcast(string &&msg) {
                                                                                  static_cast<rank_t>(rank),
                                                                                  msg})};
 
-    int msgSize{sizeof(bmtb) / sizeof(char)};
-    MPI_Send(bmtb.data(), msgSize, MPI_INT, 0, 0, MPI_COMM_WORLD);
-
-    cout << "\tSequencerAlgoLayer / Broadcaster #" << rank
-         << " : Sent message to sequencer\n";
+    MPI_Send(bmtb.data(), bmtb.size(), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
 
 }
 

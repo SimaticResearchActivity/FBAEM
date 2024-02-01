@@ -1,11 +1,8 @@
 #include <future>
 #include <iostream>
-#include "CommLayer/EnetCommLayer/EnetCommLayer.h"
 #include "OptParserExtended.h"
-#include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
 #include "SessionLayer/SessionLayer.h"
-#include "CommLayer/TcpCommLayer/TcpCommLayer.h"
-#include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
+#include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
 #include <mpi.h>
 
 using namespace std;
@@ -17,26 +14,9 @@ unique_ptr<AlgoLayer> concreteAlgoLayer(OptParserExtended const &parser)
     switch(algoId)
     {
         case 'S': return make_unique<SequencerAlgoLayer>();
-        case 'B' : return make_unique<BBOBBAlgoLayer>();
         default:
             std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoId
                       << " which is not the identifier of a defined algorithm"
-                      << std::endl
-                      << parser.synopsis () << std::endl;
-            exit(EXIT_FAILURE);
-    }
-}
-
-unique_ptr<CommLayer> concreteCommLayer(OptParserExtended const &parser)
-{
-    char commId = parser.getoptStringRequired('c')[0];
-    switch(commId)
-    {
-        case 'e': return make_unique<EnetCommLayer>();
-        case 't': return make_unique<TcpCommLayer>();
-        default:
-            std::cerr << "ERROR: Argument for Broadcast Algorithm is \"" << commId << "\""
-                      << " which is not the identifier of a defined communication layer"
                       << std::endl
                       << parser.synopsis () << std::endl;
             exit(EXIT_FAILURE);
@@ -57,9 +37,7 @@ int main(int argc, char* argv[])
             "n:nbMsg number \t Number of messages to be sent",
             "r:rank rank_number \t Rank of process in site file (if 99, all algorithm participants are executed within threads in current process)",
             "s:size size_in_bytes \t Size of messages sent by a client (must be in interval [22,65515])",
-            "S:site siteFile_name \t Name (including path) of the sites file to be used",
-            "v|verbose \t [optional] Verbose display required",
-            "w:warmupCooldown number \t [optional] Number in [0,99] representing percentage of PerfMessage session messages which will be considered as part of warmup phase or cool down phase and thus will not be measured for ping (By default, percentage is 0%)"
+            "v|verbose \t [optional] Verbose display required"
     };
 
     int nonopt;
@@ -98,26 +76,6 @@ int main(int argc, char* argv[])
     // Launch the application
     //
 
-    /*
-    if (param.getRank() != specialRankToRequestExecutionInTasks)
-    {
-        SessionLayer session{param, param.getRank(), concreteAlgoLayer(parser), concreteCommLayer(parser)};
-        session.execute();
-    }
-    else
-    {
-        size_t nbSites{param.getSites().size()};
-        vector<unique_ptr<SessionLayer>> sessions;
-        vector<future<void>> sessionTasks;
-        for (uint8_t rank = 0 ; rank < static_cast<uint8_t>(nbSites) ; ++rank)
-        {
-            sessions.emplace_back(make_unique<SessionLayer>(param, rank, concreteAlgoLayer(parser), concreteCommLayer(parser)));
-            sessionTasks.emplace_back(std::async(std::launch::async, &SessionLayer::execute, sessions.back().get()));
-        }
-        for (auto& t: sessionTasks)
-            t.get();
-    }
-     */
 
     int provided;
     MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided);
@@ -126,8 +84,10 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    SessionLayer session{param, static_cast<rank_t>(rank), concreteAlgoLayer(parser), concreteCommLayer(parser)};
+    SessionLayer session{param, static_cast<rank_t>(rank), concreteAlgoLayer(parser)};
     session.execute();
+
+    MPI_Finalize();
 
     return EXIT_SUCCESS;
 }

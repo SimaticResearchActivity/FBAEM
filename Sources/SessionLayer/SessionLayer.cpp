@@ -8,12 +8,13 @@
 using namespace std;
 using namespace fbae_SessionLayer;
 
-SessionLayer::SessionLayer(const Param &param, rank_t rank, std::unique_ptr<AlgoLayer> algoLayer, std::unique_ptr<CommLayer> commLayer)
+SessionLayer::SessionLayer(const Param &param, rank_t rank, std::unique_ptr<AlgoLayer> algoLayer)
 : param{param}
 , rank{rank}
 , algoLayer{std::move(algoLayer)}
-, commLayer{std::move(commLayer)}
-, measures{static_cast<size_t>(param.getNbMsg()*(100-param.getWarmupCooldown())/100)+1}//We add +1 to avoid not allocating enough size because of rounding by default
+, measures{static_cast<size_t>(param.getNbMsg())}
+//TODO explain
+//, measures{static_cast<size_t>(param.getNbMsg()*(100-param.getWarmupCooldown())/100)+1}//We add +1 to avoid not allocating enough size because of rounding by default
 {
     this->algoLayer->setSession(this);
 }
@@ -81,7 +82,7 @@ void SessionLayer::execute()
         static std::mutex mtx;
         scoped_lock lock{mtx};
         cout << Param::csvHeadline() << "," << Measures::csvHeadline() << "\n";
-        cout << param.asCsv(algoLayer->toString(), commLayer->toString(), to_string(rank)) << "," << measures.asCsv(
+        cout << param.asCsv(algoLayer->toString(), to_string(rank)) << "," << measures.asCsv(
                 param.getSizeMsg()) << "\n";
     }
     if (param.getFrequency())
@@ -90,10 +91,6 @@ void SessionLayer::execute()
         cout << "SessionLayer #" << rank << " : End of execution\n";
 }
 
-CommLayer *SessionLayer::getCommLayer() const
-{
-    return commLayer.get();
-}
 
 const Param &SessionLayer::getParam() const
 {
@@ -110,12 +107,12 @@ void SessionLayer::processFinishedPerfMeasuresMsg(rank_t senderRank)
     if (param.getVerbose())
         cout << "SessionLayer #" << static_cast<uint32_t>(rank) << " : Deliver FinishedPerfMeasures from sender #" << static_cast<uint32_t>(senderRank) << " (nbReceivedFinishedPerfMeasures = " << nbReceivedFinishedPerfMeasures << ")\n";
 
-    if (nbReceivedFinishedPerfMeasures > algoLayer->getBroadcasters().size())
+    if (nbReceivedFinishedPerfMeasures > algoLayer->getBroadcasters())
     {
         cerr << "ERROR : Delivering a FinishedPerfMeasures message while we already have received all FinishedPerfMeasures messages we were waiting for.\n";
         exit(EXIT_FAILURE);
     }
-    if (nbReceivedFinishedPerfMeasures == algoLayer->getBroadcasters().size())
+    if (nbReceivedFinishedPerfMeasures == algoLayer->getBroadcasters())
     {
         // All broadcasters are done doing measures ==> We can ask the AlgoLayer to terminate.
         algoLayer -> terminate();
@@ -126,12 +123,12 @@ void SessionLayer::processFirstBroadcastMsg(rank_t senderRank) {
     ++nbReceivedFirstBroadcast;
     if (param.getVerbose())
         cout << "SessionLayer #" << static_cast<uint32_t>(rank) << " : Deliver FirstBroadcast from sender #" << static_cast<uint32_t>(senderRank) << " (nbReceivedFirstBroadcast = " << nbReceivedFirstBroadcast << ")\n";
-    if (nbReceivedFirstBroadcast > algoLayer->getBroadcasters().size())
+    if (nbReceivedFirstBroadcast > algoLayer->getBroadcasters())
     {
         cerr << "ERROR : Delivering a FirstBroadcast message while we already have received all FirstBroadcast messages we were waiting for.\n";
         exit(EXIT_FAILURE);
     }
-    if (nbReceivedFirstBroadcast == algoLayer->getBroadcasters().size())
+    if (nbReceivedFirstBroadcast == algoLayer->getBroadcasters())
     {
         // As we have received all awaited FirstBroadcast messages, we know that @AlgoLayer is fully
         // operational ==> We can start our performance measures.
@@ -151,7 +148,8 @@ void SessionLayer::processPerfMeasureMsg(rank_t senderRank, std::string && msg) 
     // We check which process must send the PerfResponse. The formula hereafter guarantees that first PerfMeasure is
     // answered by successor of sender process, second PerfMeasure message is answered by successor of the successor of
     // sender process, etc.
-    if ((spm.senderRank + spm.msgNum) % algoLayer->getBroadcasters().size() == rank)
+    // FIXME Rank - 1 Because sequencer has to be rank 0
+    if ((spm.senderRank + spm.msgNum) % algoLayer->getBroadcasters() == rank - 1)
     {
         // Current process must broadcast PerfResponse message for this PerfMeasure message.
         if (param.getVerbose())

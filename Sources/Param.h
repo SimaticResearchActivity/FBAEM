@@ -34,7 +34,7 @@ private:
 public:
     explicit Param(mlib::OptParserExtended const& parser);
     [[nodiscard]] std::string
-    asCsv(std::string const &algoStr, std::string const &commLayerStr, std::string const &rankStr) const;
+    asCsv(std::string const &algoStr, std::string const &rankStr) const;
     static std::string csvHeadline();
     [[nodiscard]] int getFrequency() const;
     [[nodiscard]] int getMaxBatchSize() const;

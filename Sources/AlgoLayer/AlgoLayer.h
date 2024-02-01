@@ -1,8 +1,6 @@
 #pragma once
 
 #include "memory"
-#include "../CommLayer/CommLayer.h"
-#include "../CommLayer/CommPeer.h"
 #include "../Param.h"
 class SessionLayer;
 
@@ -11,20 +9,12 @@ private:
     /**
      * @brief List of @sites which are indeed doing broadcasts.
      */
-    std::vector<HostTuple> broadcasters;
+    int broadcasters;
     SessionLayer *session{nullptr};
 
 public:
     virtual ~AlgoLayer() = default;
 
-    /**
-     * @brief Handles packet (stored in @packetString) received from @peer. Should be called when process is a host,
-     * that is is has called @initHost() on @CommLayer.
-     * @param peer Peer from which packet was received.
-     * @param msgString String containing message.
-     * @return true if AckDisconnectIntent message was received and false otherwise
-     */
-    virtual bool callbackHandleMessage(std::unique_ptr<CommPeer> peer, std::string && msgString) = 0;
 
     /**
      * @brief Executes concrete totalOrderBroadcast algorithm. Returns when algorithm is done.
@@ -37,7 +27,7 @@ public:
      * @brief Getter for @broadcasters.
      * @return @broadcasters.
      */
-    [[nodiscard]] const std::vector<HostTuple> &getBroadcasters() const;
+    [[nodiscard]] const int &getBroadcasters() const;
 
     /**
      * @brief Getter for @session
@@ -49,7 +39,7 @@ public:
      * @brief Setter for @broadcasters.
      * @param aBroadcasters  The value to set @broadcasters to.
      */
-    void setBroadcasters(const std::vector<HostTuple> &aBroadcasters);
+    void setBroadcasters(const int broadcasterSize);
 
     /**
      * @brief Setter for @session

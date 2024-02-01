@@ -12,7 +12,6 @@ private:
     const Param &param;
     const rank_t rank;
     std::unique_ptr<AlgoLayer> algoLayer;
-    std::unique_ptr<CommLayer> commLayer;
     Measures measures;
     int32_t numPerfMeasure{0};
     int32_t nbReceivedPerfResponseForSelf{0};
@@ -57,7 +56,7 @@ private:
     void sendPeriodicPerfMessage();
 
 public:
-    SessionLayer(const Param &param, rank_t rank, std::unique_ptr<AlgoLayer> algoLayer, std::unique_ptr<CommLayer> commLayer);
+    SessionLayer(const Param &param, rank_t rank, std::unique_ptr<AlgoLayer> algoLayer);
 
     /**
      * @brief Callback called by @AlgoLayer when @AlgoLayer is able to deliver totalOrderBroadcast @msg.
@@ -76,12 +75,6 @@ public:
      * @brief Entry point of @SessionLayer to executeAndProducedStatistics it.
      */
     void execute();
-
-    /**
-     * @brief Getter for @commlayer.
-     * @return @commlayer
-     */
-    [[nodiscard]] CommLayer *getCommLayer() const;
 
     /**
      * @brief Getter for @param.

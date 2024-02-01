@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 cmake_policy(VERSION 3.15)
 
 include(FetchContent)
-project(FBAE VERSION 1.0.0 LANGUAGES CXX)
+project(FBAEM VERSION 1.0.0 LANGUAGES CXX)
 
 if(WIN32)
   # SonarLint support for CMake requires the following flag to be set on.
