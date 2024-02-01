@@ -9,37 +9,8 @@
 namespace fbae_BBOBBAlgoLayer {
 
     enum class MsgId : MsgId_t {
-        RankInfo,
-        AckDisconnectIntent,
-        Step,
-        DisconnectIntent
     };
 
-    struct StructGenericMsgWithRank {
-        MsgId msgId{};
-        rank_t senderRank{};
-
-        // This method lets cereal know which data members to serialize
-        template<class Archive>
-        void serialize(Archive &archive) {
-            archive(msgId, senderRank); // serialize things by passing them to the archive
-        }
-    };
-
-    using BroadcasterRankInfo = StructGenericMsgWithRank;
-    using BroadcasterDisconnectIntent = StructGenericMsgWithRank;
-
-    struct StructGenericMsgWithoutData {
-        MsgId msgId{};
-
-        // This method lets cereal know which data members to serialize
-        template<class Archive>
-        void serialize(Archive &archive) {
-            archive(msgId); // serialize things by passing them to the archive
-        }
-    };
-
-    using StructAckDisconnectIntent = StructGenericMsgWithoutData;
 
     struct BatchSessionMsg {
         rank_t senderRank{};

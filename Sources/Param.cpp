@@ -9,7 +9,6 @@ Param::Param(mlib::OptParserExtended const& parser)
 : nbMsg{parser.getoptIntRequired('n')}
 , rank{static_cast<uint8_t>(parser.getoptIntRequired('r'))}
 , sizeMsg{parser.getoptIntRequired('s')}
-, siteFile{parser.getoptStringRequired('S')}
 , verbose{parser.hasopt ('v')}
 {
     if (parser.hasopt('f')) {
@@ -41,23 +40,6 @@ Param::Param(mlib::OptParserExtended const& parser)
         exit(EXIT_FAILURE);
     }
 
-    // Initialize sites with contents of siteFile
-    std::ifstream ifs(siteFile);
-    if(ifs.fail()){
-        std::cerr << "ERROR: JSON file \"" << siteFile << "\" does not exist\n"
-                << parser.synopsis () << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    cereal::JSONInputArchive iarchive(ifs); // Create an input archive
-    iarchive(sites);
-
-    if (verbose)
-    {
-        std::cout << "Contents of " << siteFile << "\n";
-        for (auto const& [host, port]: sites) {
-            std::cout << "\tSite " << host << ":" << port << "\n";
-        }
-    }
 
     // Check that rank value is consistent with contents of site file
     if ((rank != specialRankToRequestExecutionInTasks) && (rank > sites.size() - 1))
@@ -69,14 +51,14 @@ Param::Param(mlib::OptParserExtended const& parser)
 }
 
 [[nodiscard]] std::string
-Param::asCsv(std::string const &algoStr, std::string const &commLayerStr, std::string const &rankStr) const
+Param::asCsv(std::string const &algoStr, std::string const &rankStr) const
 {
-    return std::string { algoStr + "," + commLayerStr + "," + std::to_string(frequency) + "," + std::to_string(maxBatchSize) + "," + std::to_string(nbMsg) + "," + rankStr  + "," + std::to_string(sizeMsg) + "," + siteFile};
+    return std::string { algoStr + "," + std::to_string(frequency) + "," + std::to_string(maxBatchSize) + "," + std::to_string(nbMsg) + "," + rankStr  + "," + std::to_string(sizeMsg) + "," + siteFile};
 }
 
 std::string Param::csvHeadline()
 {
-    return std::string { "algoLayer,commLayer,frequency,maxBatchSize,nbMsg,rank,sizeMsg,siteFile"};
+    return std::string { "algoLayer,frequency,maxBatchSize,nbMsg,rank,sizeMsg,siteFile"};
 }
 
 int Param::getFrequency() const {

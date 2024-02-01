@@ -18,13 +18,8 @@
 
 class BBOBBAlgoLayer : public AlgoLayer {
 private :
-    std::vector<std::unique_ptr<CommPeer>> peers; //peers that the entity will communicate with
+
     std::vector<rank_t> peersRank;
-    /**
-     * @brief Latch used to guarantee that all outgoing connections are established (and thus peers and peersRank are
-     * initialized and ready to be used).
-     */
-    std::latch peers_peersRank_ready{1};
 
     /**
      * @brief Mutex coupled with @condVarBatchCtrl to control that batch of messages in msgsWaitingToBeBroadcast is not
@@ -47,8 +42,6 @@ private :
 
     bool sendWave = true;
 
-    int nbConnectedBroadcasters= 0;
-
     /**
      * @brief The number of steps in each wave is also the number of peers this peer will connect to and also the
      * number of peers which will connect to this peer.
@@ -60,8 +53,11 @@ private :
     std::map<int, fbae_BBOBBAlgoLayer::StepMsg> currentWaveReceivedStepMsg;
     std::map<int, fbae_BBOBBAlgoLayer::StepMsg> nextWaveReceivedStepMsg;
 
+    int size;
+    int rank;
+    bool receive = true;
+
 public :
-    bool callbackHandleMessage(std::unique_ptr<CommPeer> peer, std::string && msgString) override;
     bool executeAndProducedStatistics() override;
     void totalOrderBroadcast(std::string && msg) override;
     void terminate() override;

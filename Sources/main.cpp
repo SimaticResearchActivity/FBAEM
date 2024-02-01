@@ -1,11 +1,9 @@
 #include <future>
 #include <iostream>
-#include "CommLayer/EnetCommLayer/EnetCommLayer.h"
 #include "OptParserExtended.h"
-#include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
 #include "SessionLayer/SessionLayer.h"
-#include "CommLayer/TcpCommLayer/TcpCommLayer.h"
 #include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
+#include <mpi.h>
 
 using namespace std;
 using namespace mlib;
@@ -15,27 +13,10 @@ unique_ptr<AlgoLayer> concreteAlgoLayer(OptParserExtended const &parser)
     char algoId = parser.getoptStringRequired('a')[0];
     switch(algoId)
     {
-        case 'S': return make_unique<SequencerAlgoLayer>();
         case 'B' : return make_unique<BBOBBAlgoLayer>();
         default:
             std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoId
                       << " which is not the identifier of a defined algorithm"
-                      << std::endl
-                      << parser.synopsis () << std::endl;
-            exit(EXIT_FAILURE);
-    }
-}
-
-unique_ptr<CommLayer> concreteCommLayer(OptParserExtended const &parser)
-{
-    char commId = parser.getoptStringRequired('c')[0];
-    switch(commId)
-    {
-        case 'e': return make_unique<EnetCommLayer>();
-        case 't': return make_unique<TcpCommLayer>();
-        default:
-            std::cerr << "ERROR: Argument for Broadcast Algorithm is \"" << commId << "\""
-                      << " which is not the identifier of a defined communication layer"
                       << std::endl
                       << parser.synopsis () << std::endl;
             exit(EXIT_FAILURE);
@@ -56,7 +37,6 @@ int main(int argc, char* argv[])
             "n:nbMsg number \t Number of messages to be sent",
             "r:rank rank_number \t Rank of process in site file (if 99, all algorithm participants are executed within threads in current process)",
             "s:size size_in_bytes \t Size of messages sent by a client (must be in interval [22,65515])",
-            "S:site siteFile_name \t Name (including path) of the sites file to be used",
             "v|verbose \t [optional] Verbose display required"
     };
 
@@ -95,6 +75,8 @@ int main(int argc, char* argv[])
     //
     // Launch the application
     //
+
+    /*
     if (param.getRank() != specialRankToRequestExecutionInTasks)
     {
         SessionLayer session{param, param.getRank(), concreteAlgoLayer(parser), concreteCommLayer(parser)};
@@ -113,5 +95,17 @@ int main(int argc, char* argv[])
         for (auto& t: sessionTasks)
             t.get();
     }
+     */
+
+    int provided;
+    MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided);
+
+    int size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    SessionLayer session{param, static_cast<rank_t>(rank), concreteAlgoLayer(parser)};
+    session.execute();
+
     return EXIT_SUCCESS;
 }

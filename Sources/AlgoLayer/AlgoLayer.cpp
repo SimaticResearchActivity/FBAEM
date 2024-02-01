@@ -9,10 +9,10 @@ SessionLayer* AlgoLayer::getSession() const {
     return session;
 }
 
-const std::vector<HostTuple> &AlgoLayer::getBroadcasters() const {
+const int &AlgoLayer::getBroadcasters() const {
     return broadcasters;
 }
 
-void AlgoLayer::setBroadcasters(const std::vector<HostTuple> &aBroadcasters) {
-    broadcasters = aBroadcasters;
+void AlgoLayer::setBroadcasters(int broadcastersSize) {
+    broadcasters = broadcastersSize;
 }
