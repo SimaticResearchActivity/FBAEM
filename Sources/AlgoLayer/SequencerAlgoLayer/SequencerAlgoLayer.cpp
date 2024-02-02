@@ -16,8 +16,6 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    cout << "MPI INFO : rank/size : " << rank << "/" << size << "\n";
-
     MPI_Barrier(MPI_COMM_WORLD);
 
 
@@ -44,21 +42,40 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
             MPI_Recv(buffer.data(), message_size, MPI_BYTE, status.MPI_SOURCE, 0, MPI_COMM_WORLD,
                      MPI_STATUS_IGNORE);
 
-
             auto bmtb{deserializeStruct<StructMessageToBroadcast>(std::string(buffer.begin(), buffer.end()))};
-            auto s{serializeStruct<StructBroadcastMessage>(StructBroadcastMessage{MsgId::BroadcastMessage,
-                                                                                  bmtb.senderRank,
-                                                                                  bmtb.sessionMsg})};
 
-            int msgSize = s.size();
-            MPI_Bcast(&msgSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            MPI_Bcast(s.data(), msgSize, MPI_BYTE, 0, MPI_COMM_WORLD);
+            using enum MsgId;  // Move it outside the switch statement
+
+            switch (bmtb.msgId)
+            {
+                case MessageToBroadcast:
+                {
+                    auto s = serializeStruct<StructBroadcastMessage>(StructBroadcastMessage{MsgId::BroadcastMessage,
+                                                                                            bmtb.senderRank,
+                                                                                            bmtb.sessionMsg});
+                    int msgSize = s.size();
+
+                    MPI_Bcast(&msgSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                    MPI_Bcast(s.data(), msgSize, MPI_BYTE, 0, MPI_COMM_WORLD);
+                    break;
+                }
+                case End:
+                    nbBrodcasterDeconnected++;
+                    if (nbBrodcasterDeconnected == size-1) {
+                        this->terminate();
+                    }
+                    break;
+                default:
+                {
+                    cerr << "ERROR: Unexpected sessionMsgTyp (" << static_cast<int>(bmtb.msgId) << ")\n";
+                    exit(EXIT_FAILURE);
+                }
+            }
 
         }
         if (getSession()->getParam().getVerbose())
             cout
                     << "\tSequencerAlgoLayer / Sequencer : Finished waiting for messages ==> Giving back control to SessionLayer\n";
-
         return false;
 
     } else {
@@ -76,16 +93,20 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
                 MPI_Bcast(&msgSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
                 buffer.resize(msgSize);
                 MPI_Bcast(buffer.data(), msgSize, MPI_BYTE, 0, MPI_COMM_WORLD);
-
             });
             task_to_receive_msg.get();
 
             auto sbm {deserializeStruct<StructBroadcastMessage>(std::move(std::string(buffer.begin(), buffer.end())))};
             getSession()->callbackDeliver(sbm.senderRank,std::move(sbm.sessionMsg));
-
         }
-        cout << "\tSequencerAlgoLayer / Broadcaster #" << rank
-             << " : Finished waiting for messages ==> Giving back control to SessionLayer\n";
+        auto s{serializeStruct<StructBroadcastMessage>(StructBroadcastMessage{MsgId::End,
+                                                                              0,
+                                                                              ""})};
+        MPI_Send(s.data(), s.size(), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
+
+        if (getSession()->getParam().getVerbose())
+            cout << "\tSequencerAlgoLayer / Broadcaster #" << rank
+                 << " : Finished waiting for messages ==> Giving back control to SessionLayer\n";
 
         return true;
     }
@@ -109,6 +130,3 @@ void SequencerAlgoLayer::totalOrderBroadcast(string &&msg) {
     MPI_Send(bmtb.data(), bmtb.size(), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
 
 }
-
-
-

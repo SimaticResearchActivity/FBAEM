@@ -6,6 +6,7 @@
 
 namespace fbae_SequencerAlgoLayer
 {
+    int nbBrodcasterDeconnected;
     //---------------------------------------------------
     // Id of messages exchanged between sequencer and broadcaster(s)
     //---------------------------------------------------
@@ -15,6 +16,7 @@ namespace fbae_SequencerAlgoLayer
         BroadcastMessage,
         // Message sent by a broadcaster to the sequencer
         MessageToBroadcast,
+        End,
     };
 
     //---------------------------------------------------
