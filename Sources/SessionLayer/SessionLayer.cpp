@@ -4,6 +4,7 @@
 #include "SessionLayer.h"
 #include "SessionLayerMsg.h"
 #include "../msgTemplates.h"
+#include <mpi.h>
 
 using namespace std;
 using namespace fbae_SessionLayer;
@@ -79,7 +80,13 @@ void SessionLayer::execute()
         // Display statistics
         static std::mutex mtx;
         scoped_lock lock{mtx};
-        cout << Param::csvHeadline() << "," << Measures::csvHeadline() << "\n";
+
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (rank == 0) {
+            cout << Param::csvHeadline() << "," << Measures::csvHeadline() << "\n";
+        }
+
         cout << param.asCsv(algoLayer->toString(), to_string(rank)) << "," << measures.asCsv(
                 param.getSizeMsg()) << "\n";
     }

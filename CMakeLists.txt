@@ -16,15 +16,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(MPI REQUIRED)
 
-#
-# We include the subset of Boost we will be using.
-#
-include_directories(boost_1_82_0_subset)
-if(WIN32)
-    # Compilation of some of the boost sources requires the following definition
-    # (which is appropriate for Windows 7 target)
-    add_compile_definitions(_WIN32_WINNT=0x0601)
-endif()
 
 #
 # Cereal : A simple FetchContent does not work ==> We generate its library

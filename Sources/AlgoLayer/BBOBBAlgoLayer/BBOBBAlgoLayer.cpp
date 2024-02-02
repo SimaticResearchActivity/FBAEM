@@ -110,8 +110,6 @@ bool BBOBBAlgoLayer::executeAndProducedStatistics() {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    cout << "MPI INFO : rank/size : " << rank << "/" << size << "\n";
-
     MPI_Barrier(MPI_COMM_WORLD);
 
     setBroadcasters(size);
