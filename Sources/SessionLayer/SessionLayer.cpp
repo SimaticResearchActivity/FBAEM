@@ -73,7 +73,7 @@ void SessionLayer::execute()
 {
     future<void> taskSendPeriodicPerfMessage;
     if (param.getVerbose())
-        cout << "SessionLayer #" << rank << " : Start execution\n";
+        cout << "SessionLayer #" << static_cast<uint32_t>(rank) << " : Start execution\n";
     if (param.getFrequency())
         taskSendPeriodicPerfMessage = std::async(std::launch::async, &SessionLayer::sendPeriodicPerfMessage, this);
     if (algoLayer->executeAndProducedStatistics())
@@ -88,7 +88,7 @@ void SessionLayer::execute()
     if (param.getFrequency())
         taskSendPeriodicPerfMessage.get();
     if (param.getVerbose())
-        cout << "SessionLayer #" << rank << " : End of execution\n";
+        cout << "SessionLayer #" << static_cast<uint32_t>(rank) << " : End of execution\n";
 }
 
 
@@ -190,7 +190,7 @@ void SessionLayer::processPerfResponseMsg(rank_t senderRank, std::string && msg)
         {
             // Process is done with sending PerfMeasure messages. It tells it is done to all broadcasters
             if (param.getVerbose())
-                cout << "SessionLayer #" << rank << " : Broadcast FinishedPerfMeasures by sender #" << rank << "\n";
+                cout << "SessionLayer #" << static_cast<uint32_t>(rank) << " : Broadcast FinishedPerfMeasures by sender #" << static_cast<uint32_t>(rank) << "\n";
             auto s {serializeStruct<SessionFinishedPerfMeasures>(SessionFinishedPerfMeasures{SessionMsgId::FinishedPerfMeasures})};
             algoLayer->totalOrderBroadcast(std::move(s));
         }
