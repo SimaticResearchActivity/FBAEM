@@ -4,6 +4,8 @@
 #include "SessionLayer/SessionLayer.h"
 #include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
 #include <mpi.h>
+#include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
+#include <mpi.h>
 
 using namespace std;
 using namespace mlib;
@@ -13,6 +15,7 @@ unique_ptr<AlgoLayer> concreteAlgoLayer(OptParserExtended const &parser)
     char algoId = parser.getoptStringRequired('a')[0];
     switch(algoId)
     {
+        case 'S': return make_unique<SequencerAlgoLayer>();
         case 'B' : return make_unique<BBOBBAlgoLayer>();
         default:
             std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoId
@@ -75,6 +78,7 @@ int main(int argc, char* argv[])
     //
     // Launch the application
     //
+
 
     int provided;
     MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided);

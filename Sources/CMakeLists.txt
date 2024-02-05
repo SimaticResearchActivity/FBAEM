@@ -9,10 +9,6 @@ add_executable(fbae
         SessionLayer/SessionLayer.h
         msgTemplates.h
         SessionLayer/SessionLayerMsg.h
-        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.cpp
-        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h
-        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayerMsg.h
-        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayerMsg.h
         SessionLayer/SessionLayerMsg.h
         basicTypes.h
         get_cpu_time.cpp

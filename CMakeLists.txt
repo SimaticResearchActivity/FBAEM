@@ -16,7 +16,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(MPI REQUIRED)
 
-
 #
 # Cereal : A simple FetchContent does not work ==> We generate its library
 # in the same manner as google-test
