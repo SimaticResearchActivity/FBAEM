@@ -70,4 +70,5 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/enet-src
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/enet-src/include")
 
 add_subdirectory(Sources)
+add_subdirectory(SerializationOverhead)
 
