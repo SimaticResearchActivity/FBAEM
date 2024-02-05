@@ -24,9 +24,7 @@ private:
     int frequency{0};
     int maxBatchSize{INT32_MAX};
     int64_t nbMsg{0};
-    uint8_t rank{0};
     int sizeMsg{0};
-    std::string siteFile{};
     std::vector<HostTuple> sites;
     bool verbose{false};
     int warmupCooldown{0};
@@ -39,8 +37,6 @@ public:
     [[nodiscard]] int getFrequency() const;
     [[nodiscard]] int getMaxBatchSize() const;
     [[nodiscard]] int64_t getNbMsg() const;
-    [[nodiscard]] uint8_t getRank() const;
-    [[nodiscard]] std::vector<HostTuple> getSites() const;
     [[nodiscard]] int getSizeMsg() const;
     [[nodiscard]] bool getVerbose() const;
     [[nodiscard]] int getWarmupCooldown() const;

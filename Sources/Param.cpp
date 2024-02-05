@@ -7,7 +7,6 @@
 
 Param::Param(mlib::OptParserExtended const& parser)
 : nbMsg{parser.getoptIntRequired('n')}
-, rank{static_cast<uint8_t>(parser.getoptIntRequired('r'))}
 , sizeMsg{parser.getoptIntRequired('s')}
 , verbose{parser.hasopt ('v')}
 {
@@ -50,14 +49,6 @@ Param::Param(mlib::OptParserExtended const& parser)
         exit(EXIT_FAILURE);
     }
 
-
-    // Check that rank value is consistent with contents of site file
-    if ((rank != specialRankToRequestExecutionInTasks) && (rank > sites.size() - 1))
-    {
-        std::cerr << "ERROR: You specifed a rank of " << rank << ", but there are only " << sites.size() << " sites specified in JSON file \"" << siteFile << "\"\n"
-                << parser.synopsis () << std::endl;
-        exit(EXIT_FAILURE);
-    }
 }
 
 [[nodiscard]] std::string
@@ -70,13 +61,13 @@ Param::asCsv(std::string const &algoStr, std::string const &rankStr) const
         + std::to_string(nbMsg) + ","
         + std::to_string(warmupCooldown) + "%,"
         + rankStr  + ","
-        + std::to_string(sizeMsg) + ","
-        + siteFile};
+        + std::to_string(sizeMsg)
+    };
 }
 
 std::string Param::csvHeadline()
 {
-    return std::string { "algoLayer,frequency,maxBatchSize,nbMsg,warmupCooldown,rank,sizeMsg,siteFile"};
+    return std::string { "algoLayer,frequency,maxBatchSize,nbMsg,warmupCooldown,rank,sizeMsg"};
 }
 
 int Param::getFrequency() const {
@@ -91,15 +82,7 @@ int64_t Param::getNbMsg() const {
     return nbMsg;
 }
 
-uint8_t Param::getRank() const
-{
-    return rank;
-}
 
-std::vector<std::tuple<std::string, int>> Param::getSites() const
-{
-    return sites;
-}
 
 int Param::getSizeMsg() const {
     return sizeMsg;
