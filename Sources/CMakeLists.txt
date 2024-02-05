@@ -7,6 +7,12 @@ add_executable(fbae
         AlgoLayer/AlgoLayer.h
         SessionLayer/SessionLayer.cpp
         SessionLayer/SessionLayer.h
+        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.cpp
+        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h
+        AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayerMsg.h
+        AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.cpp
+        AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h
+        AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayerMsg.h
         msgTemplates.h
         SessionLayer/SessionLayerMsg.h
         SessionLayer/SessionLayerMsg.h

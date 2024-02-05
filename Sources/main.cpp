@@ -3,7 +3,6 @@
 #include "OptParserExtended.h"
 #include "SessionLayer/SessionLayer.h"
 #include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
-#include <mpi.h>
 #include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
 #include <mpi.h>
 

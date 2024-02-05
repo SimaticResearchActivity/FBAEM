@@ -23,7 +23,7 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
     setBroadcasters(size - 1);
 
     // Process is sequencer
-    if (rank == 0) {
+    if (rank == size-1) {
 
         if (getSession()->getParam().getVerbose())
             cout << "\tSequencerAlgoLayer / Sequencer : Wait for messages\n";
@@ -55,8 +55,8 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
                                                                                             bmtb.sessionMsg});
                     int msgSize = s.size();
 
-                    MPI_Bcast(&msgSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-                    MPI_Bcast(s.data(), msgSize, MPI_BYTE, 0, MPI_COMM_WORLD);
+                    MPI_Bcast(&msgSize, 1, MPI_INT, size-1, MPI_COMM_WORLD);
+                    MPI_Bcast(s.data(), msgSize, MPI_BYTE, size-1, MPI_COMM_WORLD);
                     break;
                 }
                 case End:
@@ -90,9 +90,9 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
             auto task_to_receive_msg = std::async(std::launch::async, [&buffer, this] {
                 int msgSize;
 
-                MPI_Bcast(&msgSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                MPI_Bcast(&msgSize, 1, MPI_INT, size-1, MPI_COMM_WORLD);
                 buffer.resize(msgSize);
-                MPI_Bcast(buffer.data(), msgSize, MPI_BYTE, 0, MPI_COMM_WORLD);
+                MPI_Bcast(buffer.data(), msgSize, MPI_BYTE, size-1, MPI_COMM_WORLD);
             });
             task_to_receive_msg.get();
 
@@ -102,7 +102,7 @@ bool SequencerAlgoLayer::executeAndProducedStatistics() {
         auto s{serializeStruct<StructBroadcastMessage>(StructBroadcastMessage{MsgId::End,
                                                                               0,
                                                                               ""})};
-        MPI_Send(s.data(), s.size(), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(s.data(), s.size(), MPI_BYTE, size-1, 0, MPI_COMM_WORLD);
 
         if (getSession()->getParam().getVerbose())
             cout << "\tSequencerAlgoLayer / Broadcaster #" << rank
@@ -127,6 +127,6 @@ void SequencerAlgoLayer::totalOrderBroadcast(string &&msg) {
                                                                                  static_cast<rank_t>(rank),
                                                                                  msg})};
 
-    MPI_Send(bmtb.data(), bmtb.size(), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
+    MPI_Send(bmtb.data(), bmtb.size(), MPI_BYTE, size-1, 0, MPI_COMM_WORLD);
 
 }
