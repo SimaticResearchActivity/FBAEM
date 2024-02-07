@@ -14,7 +14,9 @@ add_executable(fbae
         AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h
         AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayerMsg.h
         msgTemplates.h
-        SessionLayer/SessionLayerMsg.h
+        AlgoLayer/AllGathervAlgoLayer/AllGathervAlgoLayer.cpp
+        AlgoLayer/AllGathervAlgoLayer/AllGathervAlgoLayer.h
+        AlgoLayer/AllGathervAlgoLayer/AllGathervAlgoLayerMsg.h
         SessionLayer/SessionLayerMsg.h
         basicTypes.h
         get_cpu_time.cpp

@@ -3,6 +3,7 @@
 #include "OptParserExtended.h"
 #include "SessionLayer/SessionLayer.h"
 #include "AlgoLayer/BBOBBAlgoLayer/BBOBBAlgoLayer.h"
+#include "AlgoLayer/AllGathervAlgoLayer/AllGathervAlgoLayer.h"
 #include "AlgoLayer/SequencerAlgoLayer/SequencerAlgoLayer.h"
 #include <mpi.h>
 
@@ -16,6 +17,7 @@ unique_ptr<AlgoLayer> concreteAlgoLayer(OptParserExtended const &parser)
     {
         case 'S': return make_unique<SequencerAlgoLayer>();
         case 'B' : return make_unique<BBOBBAlgoLayer>();
+        case 'V': return make_unique<AllGathervAlgoLayer>();
         default:
             std::cerr << "ERROR: Argument for Broadcast Algorithm is " << algoId
                       << " which is not the identifier of a defined algorithm"
