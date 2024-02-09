@@ -92,7 +92,6 @@ void BBOBBAlgoLayer::CatchUpIfLateInMessageSending() {
                     // because task @SessionLayer::sendPeriodicPerfMessage may have filled up @msgsWaitingToBeBroadcast
                     shortcutBatchCtrl = true;
                     getSession()->callbackDeliver(rank, std::move(msg));
-                    shortcutBatchCtrl = false;
                 }
             }
         }
@@ -115,7 +114,9 @@ bool BBOBBAlgoLayer::executeAndProducedStatistics() {
     setBroadcasters(size);
 
     const auto n = static_cast<int>(size);
-    nbStepsInWave = static_cast<int>(n % 2 == 0 ? log2(n) : ceil(log2(n)));
+
+    nbStepsInWave = static_cast<int>(static_cast<int>(std::floor(log2(n))) == log2(n) ? log2(n) : ceil(log2(n)));
+
 
 
     for (int power_of_2 = 1; power_of_2 < size; power_of_2 *= 2) {

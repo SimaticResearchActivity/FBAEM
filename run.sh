@@ -1,1 +1,1 @@
-mpirun -np 3 ./cmake-build-debug/Sources/fbae -a V -n 20 -s 32 -v
+mpirun -np 9 -hostfile hosts ./cmake-build-debug/Sources/fbae -a S -f 8 -n 250 -s 32 -w 10 -v

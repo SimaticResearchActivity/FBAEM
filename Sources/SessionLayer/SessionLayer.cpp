@@ -5,6 +5,9 @@
 #include "SessionLayerMsg.h"
 #include "../msgTemplates.h"
 #include <mpi.h>
+#include <iostream>
+#include <fstream>
+
 
 using namespace std;
 using namespace fbae_SessionLayer;
@@ -82,7 +85,14 @@ void SessionLayer::execute()
         scoped_lock lock{mtx};
         cout << Param::csvHeadline() << "," << Measures::csvHeadline() << "\n";
         cout << param.asCsv(algoLayer->toString(), to_string(rank)) << "," << measures.asCsv()
-                << "\n";
+             << "\n";
+
+        ofstream myfile;
+        myfile.open ("Results/r/" + to_string(rank));
+        myfile << param.asCsv(algoLayer->toString(), to_string(rank)) << "," << measures.asCsv()
+               << "\n";
+
+        myfile.close();
     }
     if (param.getFrequency())
         taskSendPeriodicPerfMessage.get();

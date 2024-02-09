@@ -32,10 +32,15 @@ bool AllGathervAlgoLayer::executeAndProducedStatistics() {
     auto task_to_receive_msg = std::async(std::launch::async, [this] {
         while (receive) {
 
-            auto s{serializeStruct<Message>(Message{MsgId::Message,
-                                                    static_cast<rank_t>(rank),
-                                                    msgsWaitingToBeBroadcast})};
-            msgsWaitingToBeBroadcast.clear();
+            std::string s;
+            {
+                lock_guard lck(mtxBatchCtrl);
+                s = {serializeStruct<Message>(Message{MsgId::Message,
+                                                        static_cast<rank_t>(rank),
+                                                        msgsWaitingToBeBroadcast})};
+                msgsWaitingToBeBroadcast.clear();
+            }
+
             int msgSize = s.size();
 
             // Gather the size of each message
@@ -67,7 +72,13 @@ bool AllGathervAlgoLayer::executeAndProducedStatistics() {
                 auto deserializedMsg{deserializeStruct<Message>(std::move(msg))};
                 cout << deserializedMsg.senderRank;
                 for (string h: deserializedMsg.batchesBroadcast) {
+                    // We surround the call to @callbackDeliver method with shortcutBatchCtrl = true; and
+                    // shortcutBatchCtrl = false; This is because callbackDeliver() may lead to a call to
+                    // @totalOrderBroadcast method which could get stuck in condVarBatchCtrl.wait() instruction
+                    // because task @SessionLayer::sendPeriodicPerfMessage may have filled up @msgsWaitingToBeBroadcast
+                    shortcutBatchCtrl = true;
                     getSession()->callbackDeliver(deserializedMsg.senderRank, std::move(h));
+                    shortcutBatchCtrl = false;
                 }
                 offset += message_sizes[i];
             }

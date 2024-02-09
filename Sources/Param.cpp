@@ -40,15 +40,6 @@ Param::Param(mlib::OptParserExtended const& parser)
         }
     }
 
-    if (sizeMsg < minSizeClientMessageToBroadcast || sizeMsg > maxLength)
-    {
-        std::cerr << "ERROR: Argument for size of messages is " << sizeMsg
-             << " which is not in interval [ " << minSizeClientMessageToBroadcast << " , " << maxLength << " ]"
-             << std::endl
-             << parser.synopsis () << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
 }
 
 [[nodiscard]] std::string
@@ -56,18 +47,20 @@ Param::asCsv(std::string const &algoStr, std::string const &rankStr) const
 {
     return std::string {
         algoStr + ","
+        + "MPI" + ","
         + std::to_string(frequency) + ","
         + std::to_string(maxBatchSize) + ","
         + std::to_string(nbMsg) + ","
         + std::to_string(warmupCooldown) + "%,"
         + rankStr  + ","
-        + std::to_string(sizeMsg)
+        + std::to_string(sizeMsg) + ","
+        + "Nosite"
     };
 }
 
 std::string Param::csvHeadline()
 {
-    return std::string { "algoLayer,frequency,maxBatchSize,nbMsg,warmupCooldown,rank,sizeMsg"};
+    return std::string { "algoLayer,commLayer,frequency,maxBatchSize,nbMsg,warmupCooldown,rank,sizeMsg,siteFile"};
 }
 
 int Param::getFrequency() const {
